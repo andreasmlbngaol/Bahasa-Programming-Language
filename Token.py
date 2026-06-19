@@ -11,6 +11,7 @@ class TokenType(Enum):
     INT = "INT"
     FLOAT = "FLOAT"
     STRING = "STRING"
+    BOOL = "BOOL"
     
     # Arithmetic Symbols
     PLUS = "PLUS"
@@ -99,16 +100,21 @@ KEYWORDS: dict[str, TokenType] = {
 }
 
 ALT_KEYWORDS: dict[str, TokenType] = {
-    "biarkan": TokenType.LET,
-    "kayak": TokenType.EQ,
-    "sekarang": TokenType.SEMICOLON,
+    "misal": TokenType.LET,
     "fungsi": TokenType.FN,
-    "kembalikan": TokenType.RETURN,
-    "kalau": TokenType.IF,
-    "tapi": TokenType.ELSE
+    "kembali": TokenType.RETURN,
+    "jika": TokenType.IF,
+    "atau": TokenType.ELSE,
+    "benar": TokenType.TRUE,
+    "salah": TokenType.FALSE,
+    "untuk": TokenType.FOR,
+    "selama": TokenType.WHILE,
+    "lanjut": TokenType.CONTINUE,
+    "stop": TokenType.BREAK,
+    "pakai": TokenType.IMPORT
 }
 
-TYPE_KEYWORDS: list[str] = ["int", "float", "str", "void"]
+TYPE_KEYWORDS: list[str] = ["int", "float", "str", "bool", "void", "bb", "des", "teks"]
 
 def lookup_ident(ident: str) -> TokenType:
     tt: TokenType | None = KEYWORDS.get(ident)
@@ -118,7 +124,7 @@ def lookup_ident(ident: str) -> TokenType:
     tt: TokenType | None = ALT_KEYWORDS.get(ident)
     if tt is not None:
         return tt
-    
+
     if ident in TYPE_KEYWORDS:
         return TokenType.TYPE
     

@@ -94,10 +94,9 @@ class ExpressionStatement(Statement):
         }
     
 class LetStatement(Statement):
-    def __init__(self, name: Expression = None, value: Expression = None, value_type: str = None) -> None:
+    def __init__(self, name: Expression = None, value: Expression = None) -> None:
         self.name = name
         self.value = value
-        self.value_type = value_type
 
     def type(self) -> NodeType:
         return NodeType.LetStatement
@@ -106,8 +105,7 @@ class LetStatement(Statement):
         return {
             "type": self.type().value,
             "name": self.name.json(),
-            "value": self.value.json(),
-            "value_type": self.value_type
+            "value": self.value.json()
         }
 
 class BlockStatement(Statement):
@@ -320,7 +318,7 @@ class PostfixExpression(Expression):
         return {
             "type": self.type().value,
             "operator": self.operator,
-            "right_node": self.right_node.json()
+            "left_node": self.left_node.json()
         }
 # endregion
 
@@ -369,7 +367,7 @@ class BooleanLiteral(Expression):
         self.value: bool = value
 
     def type(self) -> NodeType:
-        return NodeType.IdentifierLiteral
+        return NodeType.BooleanLiteral
     
     def json(self) -> dict:
         return {

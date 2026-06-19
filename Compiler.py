@@ -20,7 +20,10 @@ class Compiler:
             'float': ir.FloatType(),
             'bool': ir.IntType(1),
             'str': ir.PointerType(ir.IntType(8)),
-            'void': ir.VoidType()
+            'void': ir.VoidType(),
+            'bb': ir.IntType(32),
+            'des': ir.FloatType(),
+            'teks': ir.PointerType(ir.IntType(8))
         }
 
         self.module: ir.Module = ir.Module('main')
@@ -125,7 +128,6 @@ class Compiler:
     def __visit_let_statement(self, node: LetStatement) -> None:
         name: str = node.name.value
         value: Expression = node.value
-        value_type: str = node.value_type # TODO Implement
 
         value, Type = self.__resolve_value(node=value)
 
@@ -147,9 +149,14 @@ class Compiler:
             self.compile(stmt)
 
     def __visit_return_statement(self, node: ReturnStatement) -> None:
+        func_return_type = self.builder.function.ftype.return_type
+
+        if isinstance(func_return_type, ir.VoidType) or node.return_value is None:
+            self.builder.ret_void()
+            return
+
         value: Expression = node.return_value
         value, Type = self.__resolve_value(value)
-
         self.builder.ret(value)
 
     def __visit_function_statement(self, node: FunctionStatement) -> None:
@@ -192,9 +199,16 @@ class Compiler:
 
         self.compile(body)
 
+        if not self.builder.block.is_terminated:
+            if isinstance(return_type, ir.VoidType):
+                self.builder.ret_void()
+            elif isinstance(return_type, ir.FloatType):
+                self.builder.ret(ir.Constant(ir.FloatType(), 0.0))
+            else:
+                self.builder.ret(ir.Constant(ir.IntType(32), 0))
+
         self.env = previous_env
         self.env.define(name, func, return_type)
-
         self.builder = previous_builder
 
     def __visit_assign_statement(self, node: AssignStatement) -> None:
@@ -206,16 +220,17 @@ class Compiler:
             self.errors.append(f"COMPILE ERROR: Identifier {name} doesn't exist")
             return
 
-        right_value, right_type = self.__resolve_value(value)
+        right_value, right_type = self.__resolve_value(node=value)
         
         var_ptr, _ = self.env.lookup(name)
         ori_value = self.builder.load(var_ptr)
 
         if isinstance(ori_value.type, ir.IntType) and isinstance(right_type, ir.FloatType):
-            ori_value = self.builder.sitofp(ori_value, ir.FloatType())
-
+            right_value = self.builder.fptosi(right_value, ir.IntType(32))
+            right_type = ir.IntType(32)
         if isinstance(ori_value.type, ir.FloatType) and isinstance(right_type, ir.IntType):
-            ori_value = self.builder.sitofp(right_value, ir.FloatType())
+            right_value = self.builder.sitofp(right_value, ir.FloatType())
+            right_type = ir.FloatType()
 
         value, Type = None, None
         match operator:
@@ -415,7 +430,7 @@ class Compiler:
                     value = self.builder.fadd(left_value, right_value)
                 case '-':
                     value = self.builder.fsub(left_value, right_value)
-                case '-':
+                case '*':
                     value = self.builder.fmul(left_value, right_value)
                 case '/':
                     value = self.builder.fdiv(left_value, right_value)
@@ -465,6 +480,9 @@ class Compiler:
             case _:
                 func, ret_type = self.env.lookup(name)
                 ret = self.builder.call(func, args)
+
+                if isinstance(ret_type, ir.VoidType):
+                    return None, ir.VoidType()
 
         return ret, ret_type
     
@@ -551,7 +569,10 @@ class Compiler:
             case NodeType.InfixExpression:
                 return self.__visit_infix_expression(node)
             case NodeType.CallExpression:
-                return self.__visit_call_expression(node)
+                result, ret_type = self.__visit_call_expression(node)
+                if result is None:
+                    return None, ir.VoidType()
+                return result, ret_type
             case NodeType.PrefixExpression:
                 return self.__visit_prefix_expression(node)
             

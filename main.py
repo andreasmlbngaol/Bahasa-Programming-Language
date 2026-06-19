@@ -8,11 +8,11 @@ from argparse import ArgumentParser, Namespace
 
 from llvmlite import ir
 import llvmlite.binding as llvm
-from ctypes import CFUNCTYPE, c_int
+from ctypes import CFUNCTYPE, c_int, c_float, c_bool
 
 def parse_arguments() -> Namespace:
     arg_parser: ArgumentParser = ArgumentParser(
-        description="JohnLang v0.0.1-alpha"
+        description="JohnLang v0.1.0-alpha"
     )
 
     arg_parser.add_argument("file_path", type=str, help="Path to your entry point john file (ex. `main.john`)")
@@ -21,8 +21,8 @@ def parse_arguments() -> Namespace:
     return arg_parser.parse_args()
 
 LEXER_DEBUG: bool = False
-PARSER_DEBUG: bool = False
-COMPILER_DEBUG: bool = False
+PARSER_DEBUG: bool = True
+COMPILER_DEBUG: bool = True
 
 RUN_CODE: bool = True
 

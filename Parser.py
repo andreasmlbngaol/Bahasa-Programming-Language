@@ -186,13 +186,13 @@ class Parser:
         
         stmt.name = IdentifierLiteral(value=self.curr_token.literal)
 
-        if not self.__expect_peek(TokenType.COLON):
-            return None
+        # if not self.__expect_peek(TokenType.COLON):
+        #     return None
         
-        if not self.__expect_peek(TokenType.TYPE):
-            return None
+        # if not self.__expect_peek(TokenType.TYPE):
+        #     return None
         
-        stmt.value_type = self.curr_token.literal
+        # stmt.value_type = self.curr_token.literal
 
         if not self.__expect_peek(TokenType.EQ):
             return None
