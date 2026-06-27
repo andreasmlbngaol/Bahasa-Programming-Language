@@ -10,15 +10,15 @@ jobs:
     strategy:
       matrix:
         include:
-        - os: ubuntu-latest
-          artifact_name: raven
-          release_name: raven=linux
-        - os: windows=latest
-          artifact_name: raven.exe
-          release_name: raven-windows.exe
-        - os: macos-latest
-          artifact_name: raven
-          release_name: raven-macos
+          - os: ubuntu-latest
+            artifact_name: raven
+            release_name: raven-linux
+          - os: windows-latest
+            artifact_name: raven.exe
+            release_name: raven-windows.exe
+          - os: macos-latest
+            artifact_name: raven
+            release_name: raven-macos
 
     runs-on: ${{ matrix.os }}
 
@@ -50,7 +50,7 @@ jobs:
         run: |
           pyinstaller --onefile `
             --name raven `
-            --add-data "src:." `
+            --add-data "src;." `
             --additional-hooks-dir . `
             main.py
 
@@ -73,7 +73,7 @@ jobs:
       contents: write
 
     steps:
-      - name: Download artifacts
+      - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
           path: artifacts
